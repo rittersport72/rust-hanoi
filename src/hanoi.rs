@@ -1,11 +1,11 @@
+use std::fmt::Debug;
 use crate::tower::{Disk, Tower};
 use graphics::{clear, rectangle};
 use opengl_graphics::{GlGraphics, OpenGL};
 use piston::input::{RenderArgs, UpdateArgs};
 
 // Window dimensions
-//pub const WIDTH: f64 = TOWER_X_POSITION * 2.0 * 3.0;
-pub const WIDTH: f64 = TOWER_X_POSITION  * 2.0;
+pub const WIDTH: f64 = TOWER_X_POSITION * 5.0 + TOWER_X_POSITION / 2.0;
 pub const HEIGHT: f64 = NUMBER_OF_DISKS as f64 * DISK_HEIGHT + 110.0;
 
 const BACKGROUND_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0]; // black
@@ -22,6 +22,7 @@ pub struct Application {
     timer: f64,
     towec: Vec<Tower>,         // Contains the three towers
     solution: Vec<(u32, u32)>, // Solution moves disk from pole to pole
+    solution_index: usize,
 }
 
 impl Application {
@@ -32,6 +33,7 @@ impl Application {
             timer: 0.0,
             towec: vec![Tower::default(), Tower::default(), Tower::default()],
             solution: Vec::new(),
+            solution_index: 0,
         }
     }
 
@@ -64,7 +66,7 @@ impl Application {
 
                     // Draw disk
                     let rect = [
-                        (TOWER_X_POSITION * tower_count as f64)  - (DISK_MINIMUM_WIDTH * n as f64 / 2.0),
+                        (TOWER_X_POSITION * 1.4 * tower_count as f64)  - (DISK_MINIMUM_WIDTH * n as f64 / 2.0),
                         TOWER_Y_POSITION - (DISK_HEIGHT * index as f64),
                         DISK_MINIMUM_WIDTH * n as f64,
                         DISK_HEIGHT - 1.0,
@@ -80,6 +82,18 @@ impl Application {
         if self.timer >= 2.0 {
             //println!("timer hit {}", self.timer);
             self.timer = 0.0;
+
+            let moveto = self.solution.get(self.solution_index);
+            if moveto.is_some() {
+                self.solution_index += 1;
+                let fromto= moveto.unwrap();
+                println!("disk from {} to {}", fromto.0, fromto.1);
+
+                let from_tower= &mut self.towec[fromto.0 as usize];
+                let disk = from_tower.remove();
+                let to_tower= &mut self.towec[fromto.1 as usize];
+                to_tower.insert(disk);
+            }
         }
     }
 

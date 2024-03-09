@@ -4,7 +4,6 @@ mod tower;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::OpenGL;
 use piston::event_loop::{EventSettings, Events};
-use piston::input::mouse::MouseCursorEvent;
 use piston::input::{RenderEvent, UpdateEvent};
 use piston::window::WindowSettings;
 

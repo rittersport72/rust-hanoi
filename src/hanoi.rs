@@ -4,17 +4,18 @@ use opengl_graphics::{GlGraphics, OpenGL};
 use piston::input::{RenderArgs, UpdateArgs};
 
 // Window dimensions
-pub const WIDTH: f64 = 400.0 * 3.0;
-pub const HEIGHT: f64 = TOWER_Y_POSITION * NUMBER_OF_DISKS as f64;
+//pub const WIDTH: f64 = TOWER_X_POSITION * 2.0 * 3.0;
+pub const WIDTH: f64 = TOWER_X_POSITION  * 2.0;
+pub const HEIGHT: f64 = NUMBER_OF_DISKS as f64 * DISK_HEIGHT + 110.0;
 
 const BACKGROUND_COLOR: [f32; 4] = [0.1, 0.1, 0.1, 1.0]; // black
 
 // Tower
-pub const NUMBER_OF_DISKS: u32 = 3;
+pub const NUMBER_OF_DISKS: u32 = 5;
 const DISK_MINIMUM_WIDTH: f64 = 50.0;
 const DISK_HEIGHT: f64 = 20.0;
-const TOWER_X_POSITION: f64 = 200.0;
-const TOWER_Y_POSITION: f64 = 100.0;
+const TOWER_X_POSITION: f64 = 180.0;
+const TOWER_Y_POSITION: f64 = 150.0;
 
 pub struct Application {
     gl: GlGraphics,
@@ -38,7 +39,8 @@ impl Application {
         // Put disks in first tower
         let tower = &mut self.towec[0];
 
-        for n in 0..NUMBER_OF_DISKS {
+        // Loop from largest disk to smallest disk
+        for n in (0..NUMBER_OF_DISKS).rev() {
             let disk = Disk::new(n + 1);
             tower.insert(disk);
         }
@@ -49,27 +51,33 @@ impl Application {
             // Clear the screen.
             clear(BACKGROUND_COLOR, gl);
 
-            let tower = &mut self.towec[0];
-            let disks = tower.get();
+            // Loop over all towers
+            let mut tower_count = 0u32;
+            for tower in &mut self.towec {
+                tower_count += 1;
+                let disks = tower.get();
 
-            for disk in disks {
-                let n = disk.get_number();
+                // Loop over all disks in tower from the top
+                for (index, disk) in disks.iter().enumerate() {
+                    //println!("Element at position {}: {:?}", index, disk);
+                    let n = disk.get_number();
 
-                // Draw disk
-                let rect = [
-                    TOWER_X_POSITION / 2.0,
-                    TOWER_Y_POSITION + DISK_HEIGHT * n as f64,
-                    DISK_MINIMUM_WIDTH * n as f64,
-                    DISK_HEIGHT,
-                ];
-                rectangle(disk.get_color(), rect, c.transform, gl);
+                    // Draw disk
+                    let rect = [
+                        (TOWER_X_POSITION * tower_count as f64)  - (DISK_MINIMUM_WIDTH * n as f64 / 2.0),
+                        TOWER_Y_POSITION - (DISK_HEIGHT * index as f64),
+                        DISK_MINIMUM_WIDTH * n as f64,
+                        DISK_HEIGHT - 1.0,
+                    ];
+                    rectangle(disk.get_color(), rect, c.transform, gl);
+                }
             }
         });
     }
 
     pub fn update(&mut self, args: &UpdateArgs) {
         self.timer = self.timer + args.dt;
-        if self.timer >= 1.0 {
+        if self.timer >= 2.0 {
             //println!("timer hit {}", self.timer);
             self.timer = 0.0;
         }
